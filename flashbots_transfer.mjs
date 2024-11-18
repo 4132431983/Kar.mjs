@@ -33,13 +33,20 @@ async function main() {
     const usdtBalance = ethers.parseUnits("2240", 6); // 2240 USDT (with 6 decimal places)
     console.log(`USDT Balance to transfer: ${ethers.formatUnits(usdtBalance, 6)} USDT`);
 
-    // Estimate gas for the USDT transfer (Updated method)
+    // Fetch gas price from the provider
     const gasEstimates = await provider.getFeeData();
-    const gasPrice = gasEstimates.gasPrice; // Gas price in wei
+    let gasPrice = gasEstimates.gasPrice;
+
+    // Check if the gas price is a valid BigNumber, if not, convert it
+    if (!ethers.BigNumber.isBigNumber(gasPrice)) {
+        console.error("Invalid gas price received.");
+        return;
+    }
+
     const gasLimit = 60000; // Estimate based on ERC20 transfers
 
     // Convert gasPrice and gasLimit to BigNumber and calculate gas cost
-    const estimatedGasCost = gasPrice.mul(gasLimit); // Gas cost in wei
+    const estimatedGasCost = gasPrice.mul(ethers.BigNumber.from(gasLimit)); // Gas cost in wei
     console.log(`Estimated gas cost: ${ethers.formatEther(estimatedGasCost)} ETH`);
 
     // Check secure wallet ETH balance
